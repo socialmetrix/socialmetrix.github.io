@@ -1,9 +1,18 @@
 ---
 layout: default
 ---
-<h2>{{ page.title }}</h2>
-<p class="meta">{{ page.date | date_to_string }}</p>
-
-<div class="post">
-{{ content }}
+<div class="article">
+	<h2><a href="{{ page.url }}">{{ page.title }}</a></h2>
+	<p class="posted">
+		<a href="{{ page.url }}">
+			{{ page.date | date:"<span class='day'>%d</span> <span class='month'>%b</span> <span class='year'>%Y</span>" }}
+		</a>
+	</p>
+	<div class="body">
+		{{ content }}
+	</div>
+	<ul class="meta">
+		<li>Posted by <a href="/author/{{ page.author | downcase }}">{{ page.author }}</a></li>
+		<li>Category: <a href="/{{ page.categories | downcase }}">{{ page.categories }}</a></li>
+	</ul>
 </div>
