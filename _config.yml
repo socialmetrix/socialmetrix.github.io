@@ -6,16 +6,15 @@ pygments:         true
 permalink:        pretty
 
 # Setup
-title:            Hyde
-tagline:          'A Jekyll theme'
-description:      'A brazen two-column <a href="http://jekyllrb.com" target="_blank">Jekyll</a> theme that pairs a prominent sidebar with uncomplicated content. Made by <a href="https://twitter.com/mdo" target="_blank">@mdo</a>.'
+title:            42
+tagline:          'Socialmetrix DevBlog'
 url:              http://hyde.getpoole.com
 
 author:
-  name:           'Mark Otto'
-  url:            https://twitter.com/mdo
+  name:           'Socialmetrix'
+  url:            https://twitter.com/socialmetrix
 
-paginate:         5
+paginate:         10
 
 # Custom vars
 version:          2.0.0
