@@ -8,16 +8,10 @@ permalink:        pretty
 # Setup
 title:            42
 tagline:          'Socialmetrix DevBlog'
-url:              http://hyde.getpoole.com
+url:              http://socialmetrix.com
 
 author:
   name:           'Socialmetrix'
   url:            https://twitter.com/socialmetrix
 
 paginate:         10
-
-# Custom vars
-version:          2.0.0
-
-github:
-  repo:           https://github.com/poole/hyde
