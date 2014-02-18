@@ -8,7 +8,8 @@ permalink:        pretty
 # Setup
 title:            42
 tagline:          'Socialmetrix DevBlog'
-url:              http://socialmetrix.com
+description:	  'Socialmetrix DevBlog'
+url:              http://42.smx.io
 
 author:
   name:           'Socialmetrix'
