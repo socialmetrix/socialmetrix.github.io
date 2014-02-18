@@ -13,7 +13,7 @@ We believe that combining both technics will achieve a simple and yet powerful m
 
 
 ___
-## Defining Initial Version
+### Defining Initial Version
 
 A package version is define as **PACKAGE_NAME-MAJOR.MINOR.PATCH**  
 
@@ -21,21 +21,21 @@ The initial version of any new software **MUST BE** `0.1.0`
 
 The version **MUST BE** increased (bumped) as follows: 
 
-### * When you make incompatible API changes: 
+#### * When you make incompatible API changes: 
 
 Increase **MAJOR**, reset **MINOR** and **PATCH**.
 
 		1.13.56 --> 2.0.0
 
 
-### * When you add functionality in a backwards-compatible manner: 
+#### * When you add functionality in a backwards-compatible manner: 
 
 Increase **MINOR**, reset **PATCH**
 
 		1.13.56 --> 1.14.0
 
 
-### * When you make bug fixes: 
+#### * When you make bug fixes: 
 
 Increase **PATCH**
 
@@ -43,9 +43,9 @@ Increase **PATCH**
 
 
 ___
-## Branching Model
+### Branching Model
 
-### Ground rules about branchs:
+#### Ground rules about branchs:
 
 * **master**: Never commit to this branch. It must contains only the releases.
 * **develop**: Never commit to this branch. It contains the team tree.
@@ -53,14 +53,14 @@ ___
 * **hotfix**: This is your working branch for fixing, all your BUG FIX comes here.
 * **support**: NOT USED
 
-### PREPARATION
+#### PREPARATION
 
 Install git-flow package:
 
 	$ apt-get update && apt-get upgrade
 	$ apt-get install git-flow
 
-### Using git-flow
+#### Using git-flow
 
 1. Initiate your git-flow repository with `git flow init`:   
 
@@ -252,6 +252,6 @@ Don't forget to bump the **PATCH** version
 
 1. THE END
 
-## What do you think?
+### What do you think?
 
 We would love to hear your opinion and how we can make it better. How do you work? Does it seems to be much overhead?
