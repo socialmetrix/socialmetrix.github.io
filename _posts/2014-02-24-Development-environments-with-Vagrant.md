@@ -35,7 +35,7 @@ Once you have a basic .box file, save it somewhere (maybe a pendrive or a remote
 
 Now, let's create a new Vagrant machine using the previous Debian box file that we created or downloaded on the previous step. Let's say it's called "debian-wheezy.box":
 
-```
+```bash
 # 1.- We import the box file to our system...
 vagrant add box debian-wheezy ./debian-wheezy.box
 # 2.- Then create a default directory
@@ -60,7 +60,7 @@ Once you have the Vagrant machine installed with all your preferred packages and
 
 First you need to know what's the name of your Vagrant. It's usually the same name as your box, with the addition of a custom name (usually "default") and a timestamp. In this case, let's say it's called debian-wheezy_default-1393269383 (you may change this behaviour using the Vagrantfile's config variable v.name), let's package it...
 
-```
+```bash
 # Change the name to your actual VirtualBox setup on the parameter --base
 # Also, you may change where the box is outputted with the parameter --output
 vagrant package --base debian-wheezy_default-1393269383 --output ~/debian-wheezy-lamp.box
