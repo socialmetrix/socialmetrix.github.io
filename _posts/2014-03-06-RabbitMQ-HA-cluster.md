@@ -30,15 +30,17 @@ dpkg -i rabbitmq-server_3.2.3-1_all.deb
 # You may need to install or update erlang before installing rabbitmq-server
 ```
 
-Now, you must setup which ports you'll open to allow the servers can talk to each other, in this case we'll also set a custom cookie that must be the same between both nodes. In these case we opened ports 47000-47500; you must also open TCP ports 4369, 5672 between them, for erlang and rabbitmq services. If you'll use the web-management interface you'll need to open TCP ports 15672 and 55672.
+Now, you must setup which ports you'll open to allow the servers to talk to each other, in this case we opened ports 47000-47500. You must also open TCP ports 4369, 5672 between them, for erlang and rabbitmq services; and if you're planning to use the web-management interface you should to open TCP ports 15672 and 55672. We'll also set a custom cookie parameter, which must be the same across all RabbitMQ nodes.
 
 ```bash
-# In debian, the default configuration will be executed at launch reading the file /etc/default/rabbitmq-server
+# In debian, the default configuration will be executed at launch from the file /etc/default/rabbitmq-server
 echo 'export RABBITMQ_SERVER_START_ARGS="-kernel inet_dist_listen_min 47000 -kernel inet_dist_listen_max 47500"' >> /etc/default/rabbitmq-server
 echo 'export RABBITMQ_CTL_ERL_ARGS="-name rabbit@`hostname` -setcookie RANDOMSTRINGHERE"' >> /etc/default/rabbitmq-server
-# Now, start the server
+# Now, we are ready to start our engines
 /etc/init.d/rabbitmq-server restart
 ```
+
+Repeat the process for each remaining RabbitMQ server, remember that all must have the same cookie and the same open ports for internal communication.
 
 
 ### Queue Clustering
@@ -62,12 +64,14 @@ You'll find more tips about adding, checking or removing nodes from a cluster in
 
 You may do this using the CLI command line script; or via the web-management service. If you want to use the web management, remember to [activate the management plugin](https://www.rabbitmq.com/management.html) first.
 
-You'll find examples on how to synchronize all or some queues using regular expressions in the [High Availability](https://www.rabbitmq.com/ha.html#eager-synchronisation) documentation webpage. We recommend to add ha-all on every queue to avoid issues and an easier configuration.
+You'll find examples on how to synchronize all or some queues using regular expressions in the [High Availability](https://www.rabbitmq.com/ha.html#eager-synchronisation) documentation webpage. We recommend to add the _ha-all_ policy on every queue to avoid issues and to have an easier load balancing setup using ELB.
 
 
 ### Load Balancing both nodes
 
 Now, if you're on Amazon AWS, you only need to create an ELB load balancer for TCP port 5672 and point all your software to the ELB address. It's important to clarify that the ELB must be able to connect to the Queue using TCP port 5672, and because of how ELB works the port will be left open for the world, so make sure to use secure passwords and to delete the default guest username.
+
+In case you're not on Amazon you could use a service like *HAproxy* or manually deciding whether you're going to connect to the first one or the second one on your scripts and apps. Using a non-balanced setup is not recommended but might be easier for you to setup.
 
 That's all for now, have fun queuing!
 
