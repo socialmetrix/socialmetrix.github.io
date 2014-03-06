@@ -81,7 +81,7 @@ That's all for now, have fun queuing!
 * All cluster nodes must have the same version of RabbitMQ and Erlang, it's best not to use the apt/yum repository and install manually using deb/rpm packages to avoid unwanted updates on only one of the nodes which would break the replication.
 * Only the queues with the high-availability policy will be synced among the cluster. You can filter the regular expressions or use separate virtual host if you need to have some non-synced queues (only existing in one node).
 * In this tutorial we will use hostnames to join both servers, it's not recommended to use Amazon hostnames since they change each time you stop/start the instance (unless it has an Elastic IP, or is part of a VPC). Our recommendation is to use Route53 zones with the EC2 hostname as a CNAME; this will automatically point you to the local or external IP address depending your location.
-* Erlang cookies must be the same between all servers in the cluster. Check that all occurrences of the .erlang.cookie file have the same encoded string, you may find those at /root/, /home/<user>/, and /var/lib/rabbitmq/. It's best to set your cookie with a lauch parameter to avoid misconfiguration.
+* Erlang cookies must be the same between all servers in the cluster. Check that all occurrences of the .erlang.cookie file have the same encoded string, you may find those at /root/, /home/user/, and /var/lib/rabbitmq/. It's best to set your cookie with a lauch parameter to avoid misconfiguration.
 
 
 ### Some recommendations to test the replication would be these:
