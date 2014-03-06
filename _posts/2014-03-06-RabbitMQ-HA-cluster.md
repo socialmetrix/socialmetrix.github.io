@@ -12,67 +12,73 @@ We needed to deploy a mirrored high availability cluster for RabbitMQ on our Ama
 
 RabbitMQ has two clustering modes available. The first one is via the [Federation plugin](https://www.rabbitmq.com/federation.html) or creating a [High Availability](https://www.rabbitmq.com/ha.html) cluster. We'll only be discussing the last one.
 
-We've chosen to do a High Availability Cluster since we need that, when one of the nodes go down, the other can take over with minimal or no downtime. Also, since we'll be using ELB to perform a Load Balance between both queues, we can't be sure on which node you'll end up nor it's perssistance
+We've chosen to do a High Availability Cluster because, in case one of the nodes went offline, the other one must take over with minimal or no downtime. Also, since we'll be using Amazon ELB for load balancing both queue servers, we can't be sure on which node you'll end up nor it's persistence across future requests, hence both nodes should have the same information at all times. 
 
-The main idea of using Vagrant is that it's fairly simple to create and share "boxes", which basically are small virtual machines based on VirtualBox or VMWare. 
+Since all the data and push / pull requests will be replicated and processed by both nodes (assuming they're both online), the machines must have a relatively powerful CPU, and the best network connection possible between them. We haven't had issues working with two m3.large instances on different availability zones, although you should make as much performance, stress and worst case scenario tests as you can to be sure that everything will work out.
 
-You'll be able to have your own small testing server where you can deploy your scripts, your webpage, applets or anything you want to test before actually sending it to the production servers; and thus you'll know if the next build will fail before even attempting to do it. Just a simple typo can have your website down only because you haven't tested the build before commiting it.
+Some recommendations to test the replication would be these:
 
-You'll only need a computer with any OS you want (most OS are officially supported by both VirtualBox and Vagrant), and a pendrive or network storage for saving your boxes (at least 4GB should be free on those).
-
-
-### Basic OS box
-
-In this case we'll use VirtualBox to make our boxes. If you haven't installed it yet, try using your package manager (yum / apt) or manually download and install them from these webpages:
-
-* VirtualBox: https://www.virtualbox.org/wiki/Downloads
-* Vagrant: http://www.vagrantup.com/downloads.html
-
-You'll need to get (in this case) Debian running, so that you can use it as a base for all your own systems. You may do so by downloading a pre-made box from this website: http://www.vagrantbox.es/
-
-Or, if you want to, you may build it yourself using the Debian NetInstall ISO. Although, for all Linux / Mac OS users, there's a simple way to automate this using a bash script made by @dotzero that you can find here: https://github.com/dotzero/vagrant-debian-wheezy-64
-
-Once you have a basic .box file, save it somewhere (maybe a pendrive or a remote hard disk), since it will be the base for all your next proyects. If you created your basic OS box using VirtualBox please check the label "Packing your custom box" at the end of the script to make your first .box before proceeding with the setup.
+* Try shutting down and/or blocking the network between the server queues while you're pushing / pulling stuff to check it's resilience. In case you're using noAck=true requests, the server might lose pushed information that wasn't synced or give you repeated information if the server from which you've pulled haven't passed that request to the other one.
+* Check that your scripts notice when any server goes down and if it will reconnect to it automatically. Also check what will happen when the queue sends you repeated information, or if you need to re-push information.
+* Try to push / pull at the same time, at least 2 times above your normal usage frame, so you'll know if it will stay with you on emergency situations and you'll also be aware of it's scalability.
 
 
-### Your first Vagrant machine
+### Some stuff to keep in mind
 
-Now, let's create a new Vagrant machine using the previous Debian box file that we created or downloaded on the previous step. Let's say it's called "debian-wheezy.box":
+* All cluster nodes must have the same version of RabbitMQ and Erlang, it's best not to use the apt/yum repository and install manually using deb/rpm packages to avoid unwanted updates on only one of the nodes which would break the replication.
+* Only the queues with the high-availability policy will be synced among the cluster. You can filter the regular expressions or use separate virtual host if you need to have some non-synced queues (only existing in one node).
+* In this tutorial we will use hostnames to join both servers, it's not recommended to use Amazon hostnames since they change each time you stop/start the instance (unless it has an Elastic IP, or is part of a VPC). Our recommendation is to use Route53 zones with the EC2 hostname as a CNAME; this will automatically point you to the local or external IP address depending your location.
+* Erlang cookies must be the same between all servers in the cluster. Check that all occurrences of the .erlang.cookie file have the same encoded string, you may find those at /root/, /home/<user>/, and /var/lib/rabbitmq/. It's best to set your cookie with a lauch parameter to avoid misconfiguration.
 
-```
-# 1.- We import the box file to our system...
-vagrant add box debian-wheezy ./debian-wheezy.box
-# 2.- Then create a default directory
-mkdir -p ~/Vagrant/machine-01/
-cd ~/Vagrant/machine-01/
-# 3.- And we boot our machine
-vagrant init debian-wheezy
-vagrant up
-vagrant ssh
+
+### Queue Server Setup
+
+In this case we'll deploy the cluster on Debian 7 ("Wheezy") based AMIs, if you're using Red Hat or another linux distro, the steps might differ but the logic will be basically the same.
+
+```bash
+# RabbitMQ setup (.deb based to avoid unwanted updates)
+wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.2.3/rabbitmq-server_3.2.3-1_all.deb
+dpkg -i rabbitmq-server_3.2.3-1_all.deb
+# You may need to install or update erlang before installing rabbitmq-server
 ```
 
-It's possible that you need to setup the "insecure vagrant key" for password-less ssh logins or you can use your own key as well changing config.ssh.private_key_path on the Vagrantfile configuration file. If you don't want to use ssh keys; the default user, named vagrant will (should) have "vagrant" as a password by default and should be able to use sudo anywhere without a password. If you created the box manually, you may need to change those settings or setup your own ssh settings by changing config.ssh.username and (maybe) config.ssh.port or config.ssh.shell on the Vagrantfile file to match your preferred settings.
+Now, you must setup which ports you'll open to allow the servers can talk to each other, in this case we'll also set a custom cookie that must be the same between both nodes. In these case we opened ports 47000-47500; you must also open TCP ports 4369, 5672 between them, for erlang and rabbitmq services. If you'll use the web-management interface you'll need to open TCP ports 15672 and 55672.
 
-You'll now be able to install anything you need (ie. MySQL, Apache, Java, etc...) on the machine without having to install it on your own computer, and you'll also be able to re-package this box in case you need to send it to a different developer for testing or even to make a new box with all your services pre-bundled.
-
-There's also a way to make your boxes auto-prepare themselves using puppet or chef. We're not going to cover that in this case, but you can check more about that in this website: http://docs.vagrantup.com/v2/provisioning/index.html
-
-
-### Packing your custom box
-
-Once you have the Vagrant machine installed with all your preferred packages and/or services needed (ie. a LAMP stack), you may now re-package it and create a new box that already have all those services installed so you won't need to go thru all that process again and thus be able to share the box with other people. 
-
-First you need to know what's the name of your Vagrant. It's usually the same name as your box, with the addition of a custom name (usually "default") and a timestamp. In this case, let's say it's called debian-wheezy_default-1393269383 (you may change this behaviour using the Vagrantfile's config variable v.name), let's package it...
-
-```
-# Change the name to your actual VirtualBox setup on the parameter --base
-# Also, you may change where the box is outputted with the parameter --output
-vagrant package --base debian-wheezy_default-1393269383 --output ~/debian-wheezy-lamp.box
+```bash
+# In debian, the default configuration will be executed at launch reading the file /etc/default/rabbitmq-server
+echo 'export RABBITMQ_SERVER_START_ARGS="-kernel inet_dist_listen_min 47000 -kernel inet_dist_listen_max 47500"' >> /etc/default/rabbitmq-server
+echo 'export RABBITMQ_CTL_ERL_ARGS="-name rabbit@`hostname` -setcookie RANDOMSTRINGHERE"' >> /etc/default/rabbitmq-server
+# Now, start the server
+/etc/init.d/rabbitmq-server restart
 ```
 
-If you want to, it's a good idea to host this file on a storage server on your office's network and you'll only need to share the Vagrantfile with all the custom setup that you wanted. In case the instance can work on a default setup, you'll only need to repeat the "first Vagrant machine" steps but using the URL for the boxfile instead of a local reference.
+
+### Queue Clustering
+
+You'll now have both servers installed but as separate RabbitMQ instances, we need to tell them to act as one, and also clarify which queues we want them to replicate. In this case, our first server "server1.domain.com" will be the master, and "server2.domain.com" will be the slave, in case server1 falls down the second one will automatically become the new master, and the other one will become a slave once it gets back online.
+
+```bash
+# You must run this on the slave server (server2), of course use your own hostnames
+rabbitmqctl stop_app
+rabbitmqctl join_cluster rabbit@server1.domain.com
+rabbitmqctl start_app
+rabbitmqctl cluster_status
+```
+
+On the last command you must see that this server is joined to a cluster with server1.domain.com and you will be able to check that on cluster_status on the other server as well, there's no need to do anything else on the master machine, but you will need to add all other slaves in case you have more than 1. 
+
+You'll find more tips about adding, checking or removing nodes from a cluster in the [RabbitMQ Clusting](http://www.rabbitmq.com/clustering.html#breakup) documentation website.
 
 
-### And you're done!
+### Mirroring Queues
 
-You now have absolutely no excuses for not testing your builds and thus having a seamless night of sleep after an unexpected deployment marathon. Also, your SysAdmin and DevOps friends will deeply thank you for testing your code.
+You may do this using the CLI command line script; or via the web-management service. If you want to use the web management, remember to [activate the management plugin](https://www.rabbitmq.com/management.html) first.
+
+You'll find examples on how to synchronize all or some queues using regular expressions in the [High Availability](https://www.rabbitmq.com/ha.html#eager-synchronisation) documentation webpage. We recommend to add ha-all on every queue to avoid issues and an easier configuration.
+
+
+### Load Balancing both nodes
+
+Now, if you're on Amazon AWS, you only need to create an ELB load balancer for TCP port 5672 and point all your software to the ELB address. It's important to clarify that the ELB must be able to connect to the Queue using TCP port 5672, and because of how ELB works the port will be left open for the world, so make sure to use secure passwords and to delete the default guest username.
+
+That's all for now, have fun queuing!
