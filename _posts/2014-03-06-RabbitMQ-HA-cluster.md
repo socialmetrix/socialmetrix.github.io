@@ -16,19 +16,7 @@ We've chosen to do a High Availability Cluster because, in case one of the nodes
 
 Since all the data and push / pull requests will be replicated and processed by both nodes (assuming they're both online), the machines must have a relatively powerful CPU, and the best network connection possible between them. We haven't had issues working with two m3.large instances on different availability zones, although you should make as much performance, stress and worst case scenario tests as you can to be sure that everything will work out.
 
-Some recommendations to test the replication would be these:
-
-* Try shutting down and/or blocking the network between the server queues while you're pushing / pulling stuff to check it's resilience. In case you're using noAck=true requests, the server might lose pushed information that wasn't synced or give you repeated information if the server from which you've pulled haven't passed that request to the other one.
-* Check that your scripts notice when any server goes down and if it will reconnect to it automatically. Also check what will happen when the queue sends you repeated information, or if you need to re-push information.
-* Try to push / pull at the same time, at least 2 times above your normal usage frame, so you'll know if it will stay with you on emergency situations and you'll also be aware of it's scalability.
-
-
-### Some stuff to keep in mind
-
-* All cluster nodes must have the same version of RabbitMQ and Erlang, it's best not to use the apt/yum repository and install manually using deb/rpm packages to avoid unwanted updates on only one of the nodes which would break the replication.
-* Only the queues with the high-availability policy will be synced among the cluster. You can filter the regular expressions or use separate virtual host if you need to have some non-synced queues (only existing in one node).
-* In this tutorial we will use hostnames to join both servers, it's not recommended to use Amazon hostnames since they change each time you stop/start the instance (unless it has an Elastic IP, or is part of a VPC). Our recommendation is to use Route53 zones with the EC2 hostname as a CNAME; this will automatically point you to the local or external IP address depending your location.
-* Erlang cookies must be the same between all servers in the cluster. Check that all occurrences of the .erlang.cookie file have the same encoded string, you may find those at /root/, /home/<user>/, and /var/lib/rabbitmq/. It's best to set your cookie with a lauch parameter to avoid misconfiguration.
+Let's begin our crusade for a redundant, cloud friendly, RabbitMQ HA cluster!
 
 
 ### Queue Server Setup
@@ -82,3 +70,18 @@ You'll find examples on how to synchronize all or some queues using regular expr
 Now, if you're on Amazon AWS, you only need to create an ELB load balancer for TCP port 5672 and point all your software to the ELB address. It's important to clarify that the ELB must be able to connect to the Queue using TCP port 5672, and because of how ELB works the port will be left open for the world, so make sure to use secure passwords and to delete the default guest username.
 
 That's all for now, have fun queuing!
+
+
+### Some stuff to keep in mind
+
+* All cluster nodes must have the same version of RabbitMQ and Erlang, it's best not to use the apt/yum repository and install manually using deb/rpm packages to avoid unwanted updates on only one of the nodes which would break the replication.
+* Only the queues with the high-availability policy will be synced among the cluster. You can filter the regular expressions or use separate virtual host if you need to have some non-synced queues (only existing in one node).
+* In this tutorial we will use hostnames to join both servers, it's not recommended to use Amazon hostnames since they change each time you stop/start the instance (unless it has an Elastic IP, or is part of a VPC). Our recommendation is to use Route53 zones with the EC2 hostname as a CNAME; this will automatically point you to the local or external IP address depending your location.
+* Erlang cookies must be the same between all servers in the cluster. Check that all occurrences of the .erlang.cookie file have the same encoded string, you may find those at /root/, /home/<user>/, and /var/lib/rabbitmq/. It's best to set your cookie with a lauch parameter to avoid misconfiguration.
+
+
+### Some recommendations to test the replication would be these:
+
+* Try shutting down and/or blocking the network between the server queues while you're pushing / pulling stuff to check it's resilience. In case you're using noAck=true requests, the server might lose pushed information that wasn't synced or give you repeated information if the server from which you've pulled haven't passed that request to the other one.
+* Check that your scripts notice when any server goes down and if it will reconnect to it automatically. Also check what will happen when the queue sends you repeated information, or if you need to re-push information.
+* Try to push / pull at the same time, at least 2 times above your normal usage frame, so you'll know if it will stay with you on emergency situations and you'll also be aware of it's scalability.
