@@ -21,12 +21,12 @@ You'll only need a computer with any OS you want (most OS are officially support
 
 In this case we'll use VirtualBox to make our boxes. If you haven't installed it yet, try using your package manager (yum / apt) or manually download and install them from these webpages:
 
-* VirtualBox: https://www.virtualbox.org/wiki/Downloads
-* Vagrant: http://www.vagrantup.com/downloads.html
+* VirtualBox: [https://www.virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads)
+* Vagrant: [http://www.vagrantup.com/downloads.html](http://www.vagrantup.com/downloads.html)
 
-You'll need to get (in this case) Debian running, so that you can use it as a base for all your own systems. You may do so by downloading a pre-made box from this website: http://www.vagrantbox.es/
+You'll need to get (in this case) Debian running, so that you can use it as a base for all your own systems. You may do so by downloading a pre-made box from this website: [http://www.vagrantbox.es/](http://www.vagrantbox.es/)
 
-Or, if you want to, you may build it yourself using the Debian NetInstall ISO. Although, for all Linux / Mac OS users, there's a simple way to automate this using a bash script made by @dotzero that you can find here: https://github.com/dotzero/vagrant-debian-wheezy-64
+Or, if you want to, you may build it yourself using the Debian NetInstall ISO. Although, for all Linux / Mac OS users, there's a simple way to automate this using a bash script made by @dotzero that you can find here: [https://github.com/dotzero/vagrant-debian-wheezy-64](https://github.com/dotzero/vagrant-debian-wheezy-64)
 
 Once you have a basic .box file, save it somewhere (maybe a pendrive or a remote hard disk), since it will be the base for all your next proyects. If you created your basic OS box using VirtualBox please check the label "Packing your custom box" at the end of the script to make your first .box before proceeding with the setup.
 
@@ -51,7 +51,7 @@ It's possible that you need to setup the "insecure vagrant key" for password-les
 
 You'll now be able to install anything you need (ie. MySQL, Apache, Java, etc...) on the machine without having to install it on your own computer, and you'll also be able to re-package this box in case you need to send it to a different developer for testing or even to make a new box with all your services pre-bundled.
 
-There's also a way to make your boxes auto-prepare themselves using puppet or chef. We're not going to cover that in this case, but you can check more about that in this website: http://docs.vagrantup.com/v2/provisioning/index.html
+There's also a way to make your boxes auto-prepare themselves using puppet or chef. We're not going to cover that in this case, but you can check more about that in this website: [http://docs.vagrantup.com/v2/provisioning/index.html](http://docs.vagrantup.com/v2/provisioning/index.html)
 
 
 ### Packing your custom box
