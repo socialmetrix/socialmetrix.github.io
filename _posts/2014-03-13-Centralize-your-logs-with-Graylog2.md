@@ -77,7 +77,7 @@ And then you'll need a password to login at the web panel, you can use any passw
 echo -n 'PasswordHere!' | shasum -a 256
 ```
 
-You need to save that hash string as the **root_password_sha2** at */etc/graylog2/server/server.conf*
+You need to save that hash string as the **root\_password\_sha2** at */etc/graylog2/server/server.conf*
 
 
 ### Server Startup
@@ -90,7 +90,7 @@ Now, we use the init files to start all the required services. In case your OS d
 /etc/init.d/graylog2-web start
 ```
 
-Now you should be able to login on **http://yourhostname.com:9000** with the user admin and the password you've set on the previous step. You can change the password at any time by just editing the same variable on the file */etc/graylog2/server/server.conf*
+Now you should be able to login on **http://yourhostname.com:9000** with the user admin and the password you've set on the previous step. You can change the password at any time by just editing the variable **root\_password\_sha2** on the file */etc/graylog2/server/server.conf*
 
 
 ### Testing the service and deploying it for production usage
