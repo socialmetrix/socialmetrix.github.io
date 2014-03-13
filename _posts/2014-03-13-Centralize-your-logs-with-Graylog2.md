@@ -5,7 +5,7 @@ tags: [graylog2, gelf, linux, debian]
 author: kuteninja
 ---
 
-[Graylog2](http://graylog2.org/) is an open source log management solution used to store logs in [ElasticSearch](http://www.elasticsearch.org/)and perform data analysis. It consists of a server application written in Java that accepts Syslog and GELF messages via TCP, UDP or AMQP and stores them in the database. The second part is a web interface that allows you to manage those indexed messages; there you can search patterns, create charts, send reports and be alerted when something happens.
+[Graylog2](http://graylog2.org/) is an open source log management solution used to store logs in [ElasticSearch](http://www.elasticsearch.org/) and perform data analysis. It consists of a server application written in Java that accepts Syslog and GELF messages via TCP, UDP or AMQP and stores them in the database. The second part is a web interface that allows you to manage those indexed messages; there you can search patterns, create charts, send reports and be alerted when something happens.
 
 
 ### Why Graylog2
@@ -60,7 +60,7 @@ dpkg -i graylog2-server_0.20.1-1_all.deb graylog2-web_0.20.1-1_all.deb graylog2-
 sed -i 's@no@yes@' /etc/default/graylog2-server
 sed -i 's@no@yes@' /etc/default/graylog2-web
 # 4th: Change graylog2-server.uris so that it points to localhost
-sed -i "s/graylog2-server.uris=.*/graylog2-server.uris=\"http:\/\/127.0.0.1:12900\/\" /etc/graylog2/web/graylog2-web-interface.conf
+sed -i "s/graylog2-server.uris=.*/graylog2-server.uris=\"http:\/\/127.0.0.1:12900\//" /etc/graylog2/web/graylog2-web-interface.conf
 ```
 
 Now, you need to setup a password hash for encryption in general; the easiest way to do it is with pwgen:
@@ -69,7 +69,7 @@ Now, you need to setup a password hash for encryption in general; the easiest wa
 pwgen -s 96 
 ```
 
-That will give you a bunch of passwords that you can use for anything. You need to save it as a "password_secret" at /etc/graylog2/server/server.conf and place the same one as "application.secret" at /etc/graylog2/web/graylog2-web-interface.conf
+That will give you a bunch of passwords that you can use for anything. You need to pick one of those, and save it as a **password_secret** at */etc/graylog2/server/server.conf* and place the same one as **application.secret** at */etc/graylog2/web/graylog2-web-interface.conf*
 
 And then you'll need a password to login at the web panel, you can use any password you want encoded with via SHA256. The easiest way to do it is using echo and shasum:
 
@@ -77,7 +77,7 @@ And then you'll need a password to login at the web panel, you can use any passw
 echo -n 'PasswordHere!' | shasum -a 256
 ```
 
-You need to save that hash string as the "root_password_sha2" at /etc/graylog2/server/server.conf
+You need to save that hash string as the **root_password_sha2** at */etc/graylog2/server/server.conf*
 
 
 ### Server Startup
@@ -90,7 +90,7 @@ Now, we use the init files to start all the required services. In case your OS d
 /etc/init.d/graylog2-web start
 ```
 
-Now you should be able to login on *http://yourhostname.com:9000* with the user admin and the password you've set on the previous step. You can change the password at any time by just editing the same variable on the file server.conf.
+Now you should be able to login on **http://yourhostname.com:9000** with the user admin and the password you've set on the previous step. You can change the password at any time by just editing the same variable on the file */etc/graylog2/server/server.conf*
 
 
 ### Testing the service and deploying it for production usage
@@ -107,6 +107,8 @@ When you first enter the Graylog2 Web Interface, you'll notice a warning on top 
 curl -XPOST http://yourhostname.com:12202/gelf -p0 -d '{"short_message":"Hello there", "host":"example.org", "facility":"test", "_foo":"bar"}'
 ```
 
-If you can find "Hello there" using the Search panel, and the hostname "example.org" listed on the Sources page, you're good to go. To deploy your own logs on your applications it would be best if you check the documentation for the plugin you need, they're listed as [GELF Libraries](http://graylog2.org/gelf#libraries) on the Graylog2 Website. 
+If you can find *"Hello there"* using the Search panel, and the hostname *"example.org"* listed on the Sources page, you're good to go. To deploy your own logs on your applications it would be best if you check the documentation for the plugin you need, they're listed as [GELF Libraries](http://graylog2.org/gelf#libraries) on the Graylog2 Website. 
 
 Just as a side-note, if you need to log information from a separate software that you can't modify (ie a privative application), you could use the Grok filter from Logstash to process the software log files directly and send them to Graylog2 in a GELF format as well.
+
+There's also a way to get the logfiles from a RabbitMQ Queue using an AMQP source. If you have a [RabbitMQ Cluster](http://42.smx.io/2014/03/06/RabbitMQ-HA-cluster/) it might be a good idea to send the logs there, since in the event that the server goes down the machines will keep logging on the queue server.
